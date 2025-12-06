@@ -1,9 +1,12 @@
 
 TODO
 
-- automate collection of many docs or at least montaigne
+- learn what i'm doing
+- link back to gutenberg
+- formatting
+- automate collection of many docs?
+- better checking of what is and is not a passage (eg exclude lists, headers)
 - check if the embedding needs to be updated?
+- pickled embedding will cross file size limit - figure out alternative?
 - additional metadata, like year and translator and maybe country of origin
-- put things in functions
-- make a package?
-- oh yeah and host in some way?
+- Figure out streamlit
