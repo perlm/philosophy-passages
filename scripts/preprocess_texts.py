@@ -110,7 +110,7 @@ PHILOSOPHERS = [
     #"Herbart",
     "Comte",
     "John Stuart Mill",
-    "Bentham",
+    "Bentham", # note that there is strangely little Bentham in Gutenberg
     "Feuerbach",
     "Karl Marx",
     "Kierkegaard",
@@ -167,13 +167,19 @@ def main():
     for name in PHILOSOPHERS:
         for info, text in searchandretrieve(RAW, {'Author': name}):
 
+            # fine tune list of texts
             # check for multi-language texts. Some seem to be english +
             # eg "Cicero: Letters to Atticus, Volume III (of 3)" english and latin
             # unfortunately, its listed as just english, but contains latin too
             if info['Language'][0] != 'English' or len(info['Language'])>1:continue
-            if info['Author'][0] == 'George Adam Smith':continue
+
+            # remove sounding similar authors
+            if 'George Adam Smith' in info['Author'][0]:continue
             if info['Author'][0] == 'William John Locke':continue
             if 'Arguments of Celsus, Porphyry, and' in info['Title'][0]:continue
+
+            # contains multiple works by different authors, and overlaps other set.
+            if info['Title'][0] == 'Literary and Philosophical Essays: French, German and Italian':continue
 
             # for works with more than 1 author, try to find the one that matched listed
             i=0

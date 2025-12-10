@@ -36,25 +36,29 @@ else:
 #model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 #similarity_matrix = model.similarity(embeddings, embeddings)
 
-# TODO() - return score?
+# TODO() - also return score?
 def batched_cosine_sim(a, b, batch_size=128):
     # compute all the similarities and save only the index of the most similar
     results = []
+    resulting_score = []
     for i in range(0, len(a), batch_size):
         print(f"{i} of {len(a)}")
         sims = cosine_similarity(
             a[i:i+batch_size], b
         )
         #print(sims.shape)
+        # index of top score per row
         idx = np.argmax(sims, axis=1)
         #print(idx.shape)
         #results.append(sims)
         results.extend(idx)
-    return results
 
-# this works, but would allow matching with other passages in the same text
-#results = batched_cosine_sim(embeddings,embeddings)
+        # value of top score per row
+        scores = np.max(sims, axis=1)
+        resulting_score.extend(scores)
+    return results, resulting_score
 
+# remake query and matching matrices for each author, to prevent self-matching
 result_list = []
 for author in passages["author"].unique():
     print(author)
@@ -69,8 +73,10 @@ for author in passages["author"].unique():
     comparison_embeddings = embeddings[mask.values]
 
     if author_embeddings.shape[0]>0 and comparison_embeddings.shape[0]>0:
-        results = batched_cosine_sim(author_embeddings,comparison_embeddings)
-        comparison_matches = comparison_passages.iloc[results]
+        results, resulting_score = batched_cosine_sim(author_embeddings,comparison_embeddings)
+        comparison_matches = comparison_passages.iloc[results].copy()
+
+        comparison_matches["score"] = resulting_score
 
         # before combining, need to reindex
         to_combine = [author_passages,comparison_matches]
