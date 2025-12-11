@@ -104,7 +104,7 @@ ggraph(network, layout = lay) +
   geom_edge_arc(aes(color=passage_frac,
                     width = passage_frac),
                 alpha = 0.5,
-                arrow = arrow(length = unit(1, "mm")),
+                #arrow = arrow(length = unit(1, "mm")),
                 end_cap = circle(6, 'mm'),
                 show.legend = FALSE) +
   geom_node_text(
@@ -154,12 +154,13 @@ ggraph(network, layout = "circle") +
   xlab('') + ylab('')
 
 # node style
-ggraph(network, layout = "fr") +
+ggraph(network, layout = 'kk') + # + "fr") +
   geom_edge_arc(aes(color=passage_frac,
                     width = passage_frac),
-                strength = 0.2, # get lines inside circle
+                strength = 0.1,
                 alpha = 0.5,
-                arrow = arrow(length = unit(1, "mm")),
+                #arrow = arrow(length = unit(0.5, "mm")),
+                start_cap = circle(6, 'mm'),
                 end_cap = circle(6, 'mm'),
                 show.legend = FALSE) +
   geom_node_text(
@@ -213,9 +214,9 @@ dataset %>%
   geom_vline(xintercept = fundamentals_section_breaks, size=0.25)
 
 
-matches_of_interest <- c('Aquinas','Leibniz', 'Hume','Rousseau', )
+matches_of_interest <- c('Aquinas','Leibniz', 'Hume','Rousseau')
 
-dataset %>%
+tmp <- dataset %>%
   filter(author=='Kant') %>%
   filter(title=='Fundamental Principles of the Metaphysic of Morals') %>%
   mutate(section = case_when(
@@ -223,7 +224,7 @@ dataset %>%
     index < fundamentals_section_breaks[2] ~ 'Section 1',
     index < fundamentals_section_breaks[3] ~ 'Section 2',
     TRUE ~ 'Section 3'
-    )
+  )
   ) %>%
   group_by(section,match_author) %>%
   summarise(passages = n()) %>%
@@ -231,15 +232,20 @@ dataset %>%
   group_by(section) %>%
   mutate(passage_frac = passages/sum(passages)) %>%
   mutate(match_author = ifelse(match_author %in% matches_of_interest,as.character(match_author),'Other')) %>%
-  #mutate(match_author = factor(match_author, levels = c('Other',matches_of_interest))) %>%
+  mutate(match_author = factor(match_author, levels = c('Other',matches_of_interest))) %>%
   filter(match_author != 'Other') %>%
-  mutate(match_author = factor(match_author, levels = matches_of_interest)) %>%
+  mutate(match_author = factor(match_author, levels = matches_of_interest))
+  
+
+tmp %>% arrange(section,desc(passage_frac))
+
+tmp %>%
   ggplot(aes(x=section,y=passage_frac,fill=match_author)) +
   geom_bar(stat = "identity") +
   ylab('Fraction of Passages') +
   xlab('') +
   theme_minimal() +
-  ggtitle("Kant's 'Fundamental Principles of the Metaphysics of Morals")
+  ggtitle("Kant's 'Fundamental Principles of the Metaphysics of Morals'")
 
 
 # evenly split among a few - tends to be hume + aquinas
